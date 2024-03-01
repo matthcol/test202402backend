@@ -12,6 +12,8 @@ import org.mockito.BDDMockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.dao.DataAccessException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -81,5 +83,35 @@ class MovieControllerTest {
     // void testAdd_ DAO exception: DataAccessException
     // mockservice throws DataAccessException => HTTP status Conflict 409
 
+    @ParameterizedTest
+    @CsvSource({
+            "Dune,2020,,,",
+    })
+    void testAdd_serviceException(String name, Short year, Short duration, String synopsis, ColorType colorType) throws Exception {
+        // prepare mock
+
+        BDDMockito.given(movieService.add(ArgumentMatchers.any()))
+                .willThrow(DataIntegrityViolationException.class);
+
+        // prepare json to post
+        var movieRequest = MovieDetailFactory.movieJsonFrom(null, name, year, duration, synopsis, colorType);
+
+        // when
+        httpClient.perform(MockMvcRequestBuilders.post(BASE_URL)
+                        .content(movieRequest)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                )
+                // handle result
+                .andDo(MockMvcResultHandlers.print())
+                // verify result
+                .andExpect(MockMvcResultMatchers.status().isConflict())
+        ;
+
+        // verify mock has been called
+        BDDMockito.then(movieService)
+                .should()
+                .add(BDDMockito.any());
+    }
 
 }
