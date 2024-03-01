@@ -13,27 +13,49 @@ import org.mockito.*;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.data.jpa.JpaRepositoriesAutoConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestComponent;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 
-@ExtendWith(MockitoExtension.class)
+// don't use @SpringBootTest component scanning
+@ExtendWith(SpringExtension.class)
 class MovieServiceImplTest {
 
-    // componeent to test
-    @InjectMocks()
-    MovieServiceImpl movieService;
 
-    @BeforeEach
-    void  setup(){
-        MockitoAnnotations.openMocks(this);
-    }
-    // componentt dependencies
-    @Mock
+    // componeent to test
+    // @InjectMocks()
+    @Autowired
+    MovieService movieService;
+
+//    @Autowired
+//    MovieService movieService; // + @MockBean movieRepository + modelMapper
+
+    // component dependencies
+    @MockBean
     ModelMapper modelMapper;
 
-    @Mock
+    @MockBean
     MovieRepository movieRepository;
+
+    // DI MovieService
+    @TestConfiguration // or @Configuration
+    static class ContextConfiguration {
+        @Bean
+        public MovieService sessionService(ModelMapper modelmapper) {
+            return new MovieServiceImpl(modelmapper);
+        }
+    }
 
     @Test
     void testAdd(){
@@ -87,6 +109,9 @@ class MovieServiceImplTest {
 
         Mockito.verify(modelMapper, BDDMockito.times(2))
                 .map(BDDMockito.any(), BDDMockito.any());
+        // in detail:
+        BDDMockito.then(modelMapper).should().map(movieCreate, MovieEntity.class);
+        BDDMockito.then(modelMapper).should().map(movieEntityRepositoryResponse, MovieSimple.class);
     }
 
 }
