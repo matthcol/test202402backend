@@ -13,6 +13,9 @@ import org.mockito.*;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -20,20 +23,22 @@ import static org.junit.jupiter.api.Assertions.*;
 @ExtendWith(MockitoExtension.class)
 class MovieServiceImplTest {
 
-    // componeent to test
-    @InjectMocks()
+
     MovieServiceImpl movieService;
+
+    ModelMapper modelMapper;
+
+    MovieRepository movieRepository;
 
     @BeforeEach
     void  setup(){
-        MockitoAnnotations.openMocks(this);
+        // Manual DI
+        modelMapper = Mockito.mock(ModelMapper.class);
+        movieRepository = Mockito.mock(MovieRepository.class);
+        movieService = new MovieServiceImpl(movieRepository, modelMapper);
+ //       MockitoAnnotations.openMocks(this);
     }
-    // componentt dependencies
-    @Mock
-    ModelMapper modelMapper;
 
-    @Mock
-    MovieRepository movieRepository;
 
     @Test
     void testAdd(){
@@ -87,6 +92,9 @@ class MovieServiceImplTest {
 
         Mockito.verify(modelMapper, BDDMockito.times(2))
                 .map(BDDMockito.any(), BDDMockito.any());
+        // in detail:
+        BDDMockito.then(modelMapper).should().map(movieCreate, MovieEntity.class);
+        BDDMockito.then(modelMapper).should().map(movieEntityRepositoryResponse, MovieSimple.class);
     }
 
 }
