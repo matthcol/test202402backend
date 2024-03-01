@@ -19,7 +19,7 @@ public class MovieDetail extends MovieSimple {
         }
 
         public List<PersonSimple> getActors() {
-                return actors;
+               return actors;
         }
 
         public void setActors(List<PersonSimple> actors) {

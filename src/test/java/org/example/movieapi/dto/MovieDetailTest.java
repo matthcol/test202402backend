@@ -7,6 +7,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,12 +29,14 @@ class MovieDetailTest {
         var actualActors = movie.getActors();
         // then
         assertNotNull(actualActors);
-        assertEquals(givenActors.size(), actualActors.size());
+        assertEquals(givenActors.size(), actualActors.size(), "actors size");
         assertAll(givenActors
                 .stream()
                 .map(
-                    givenActor -> () -> assertTrue(actualActors.contains(givenActor))
-                        // TODO: improve message
+                    givenActor -> () -> assertTrue(
+                            actualActors.contains(givenActor),
+                            MessageFormat.format("actor <{0}> in movie actors", givenActor.getName())
+                    )
                 )
         );
     }

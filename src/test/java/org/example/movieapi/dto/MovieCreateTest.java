@@ -26,7 +26,7 @@ class MovieCreateTest {
         assertEquals(actualName, givenName);
     }
 
-    @ParameterizedTest
+    @ParameterizedTest(name="[{index}] name=''{0}''")
     @ValueSource(strings={
             // NB: wrong buisiness value, accepted here
             "",
